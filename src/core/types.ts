@@ -1,7 +1,7 @@
 import { Piece } from "../entities/Piece"
 import { Tile } from "../entities/Tile"
 
-export const TILE_SIZE = 10
+export const TILE_SIZE = 100
 
 export enum Facing {
     NORTH,

@@ -17,7 +17,7 @@ export class Checkerboard extends Entity {
     selection: PieceSlot = null
     currentTurn: PieceColor = PieceColor.WHITE
 
-    constructor(scene: THREE.Scene, terrainDef: TerrainDefinition, width = 8, height = 8) {
+    constructor(fbxs: THREE.Object3D[], scene: THREE.Scene, terrainDef: TerrainDefinition, width = 8, height = 8) {
         super(
             new THREE.PlaneGeometry(width * TILE_SIZE, height * TILE_SIZE, width, height),
             new THREE.MeshBasicMaterial({ color: 0xC4C6C4 })
@@ -26,33 +26,37 @@ export class Checkerboard extends Entity {
         this.mesh.position.set(0, 0, 0)
         this.mesh.rotation.set(-Math.PI / 2, 0, 0)
 
+        let i = 0
+
         this.terrain = terrainDef.map((line, y) => line.map((tileDef, x) => {
             const tile = new Tile(this, y % 2 === x % 2 ? TileColor.BLACK : TileColor.WHITE, x, y)
+
             if (tileDef !== null) {
                 let piece: Piece
+
                 switch (tileDef.type) {
                     case PieceType.PAWN:
-                        piece = new Pawn(tileDef, tile)
+                        piece = new Pawn(fbxs[i++], tileDef, tile)
                         break
 
                     case PieceType.ROOK:
-                        piece = new Rook(tileDef, tile)
+                        piece = new Rook(fbxs[i++], tileDef, tile)
                         break
 
                     case PieceType.BISHOP:
-                        piece = new Bishop(tileDef, tile)
+                        piece = new Bishop(fbxs[i++], tileDef, tile)
                         break
 
                     case PieceType.KNIGHT:
-                        piece = new Knight(tileDef, tile)
+                        piece = new Knight(fbxs[i++], tileDef, tile)
                         break
 
                     case PieceType.QUEEN:
-                        piece = new Queen(tileDef, tile)
+                        piece = new Queen(fbxs[i++], tileDef, tile)
                         break
 
                     case PieceType.KING:
-                        piece = new King(tileDef, tile)
+                        piece = new King(fbxs[i++], tileDef, tile)
                         break
 
                     default:
@@ -84,7 +88,8 @@ export class Checkerboard extends Entity {
     private onClick(inter: THREE.Intersection) {
         if (inter) {
             let tile = this.terrain.flat()
-                .find(tile => tile !== null && (tile.mesh.uuid === inter.object.uuid || tile.piece?.mesh.uuid === inter.object.uuid)) ?? null
+                //.find(tile => tile !== null && (tile.mesh.uuid === inter.object.uuid || tile.piece?.mesh.uuid === inter.object.uuid)) ?? null
+                .find(tile => tile !== null && (tile.mesh.uuid === inter.object.uuid || tile.piece?.mesh.uuid === inter.object.parent?.uuid)) ?? null
 
             if (tile) {
                 console.log(tile)
@@ -128,6 +133,15 @@ export class Checkerboard extends Entity {
         for (const move of moves) {
             const mat = this.terrain[move.y][move.x].mesh.material as THREE.MeshBasicMaterial
             mat.color.set(0xFF0000)
+        }
+    }
+
+
+    animate(clock: THREE.Clock) {
+        const delta = clock.getDelta()
+
+        for (const mixer of this.terrain.flat().filter(t => t.piece).map(t => t.piece!.mixer)) {
+            mixer.update(delta)
         }
     }
 

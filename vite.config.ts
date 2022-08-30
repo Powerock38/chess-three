@@ -8,10 +8,5 @@ export default defineConfig({
             '/@': resolve(__dirname, './src'),
         },
     },
-    plugins: [glsl()],
-    optimizeDeps: {
-        exclude: [
-            "three",
-        ]
-    }
+    plugins: [glsl()]
 })

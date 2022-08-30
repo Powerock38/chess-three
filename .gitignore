@@ -1,3 +1,5 @@
+*.fbx
+
 # Logs
 logs
 *.log
